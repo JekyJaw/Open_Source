@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Paladin Test Suite</title>
+    <link rel="stylesheet" href="qunit/qunit.css" type="text/css" media="screen">
+    <script src="qunit/qunit.js"></script>
+    <!-- To test the dist file, uncomment the line below and comment out
+         the src/paladin.js script. -->
+    <!-- script src="../dist/paladin.js"></script -->
+    <script src="../src/paladin.js"></script>
+    <script src="subsystem.js"></script>
+    <script src="tasker.js"></script>
+    <script src="event.js"></script>
+    <script src="graphics.js"></script>
+    <script src="sound.js"></script>
+    <style>
+      #test-canvas {
+        width: 300px;
+        height: 300px;
+        display: block;
+        position: static;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 id="qunit-header">Paladin Test Suite</h1>
+    <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+    <canvas id="test-canvas"></canvas>
+  </body>
+</html>
