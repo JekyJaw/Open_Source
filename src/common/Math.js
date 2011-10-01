@@ -15,7 +15,13 @@ var _Math = function( options ) {
             Float32: Float32Array,
             Float64: Float64Array
     };
-    const FLOAT_ARRAY_TYPE = FLOAT_ARRAY_ENUM.Float32;
+    
+    var FLOAT_ARRAY_TYPE = FLOAT_ARRAY_ENUM.Float32;
+    /* const FLOAT_ARRAY_TYPE = FLOAT_ARRAY_ENUM.Float32; 
+    function defineConstant(obj, name) { // Just to consider
+        obj.__defineGetter__(name, function() { return value; }); 
+    } */
+
 
     Object.defineProperty( this, 'ARRAY_TYPE', {
         get: function() {
@@ -24,7 +30,7 @@ var _Math = function( options ) {
     });
 
     var Vector = function( dim, args ) {
-        var elements = null;
+        var elements;
         if( 1 === args.length ) {
             elements = args[0];
         }
@@ -56,15 +62,15 @@ var _Math = function( options ) {
             
             clear: function( v ) {
                 for( var i = 0; i < v.length; ++ i )
-                    v[i] = 0;
+                    v[i] = 0;                
             },
 
             equal: function( v1, v2 ) {
-                if( v1.length != v2.length )
+                if( v1.length !== v2.length )
                     return false;
                 var dim = v1.length;
                 for( var i = 0; i < dim; ++ i ) {
-                    if( v1[i] != v2[i] )
+                    if( v1[i] !== v2[i] )
                         return false
                 }
 
@@ -111,8 +117,12 @@ var _Math = function( options ) {
 
             iadd: vector.iadd,
 
-            angle: function( v1, v2 ) {
-                //acos(v1*v2)
+            angle: function( v1, v2 ) { 
+                assert( v1.length === v2.length,
+                'v1 and v2 must have the same number of components' );
+                
+                /* Returns signed angle */
+                return Math.atan2(((v1[0] * v2[1]) - (v1[1] * v2[0])), this.dot(v1, v2));
             },
 
             cross: function( v1, v2 ) {
@@ -154,6 +164,9 @@ var _Math = function( options ) {
             },
 
             normalize: function( v ) {
+                var length;
+                assert( (length = this.length(v)) === 0, 'v must have more then 0 components');
+                return new this.Vector2(v[0]/length,v[1]/length);
             },
 
             inormalize: function( v ) {
@@ -165,8 +178,7 @@ var _Math = function( options ) {
 
                 return new that.Vector2(
                         v1[0] - v2[0],
-                        v1[1] - v2[1],
-                        v1[2] - v2[2]
+                        v1[1] - v2[1]
                 );
             },
 
@@ -199,11 +211,10 @@ var _Math = function( options ) {
             angle: function( v1, v2 ) {
                 assert( v1.length === v2.length,
                 'v1 and v2 must have the same number of components' );
-                
-               var A = ((v1[0] * v1[0]) + (v1[1] * v1[1]) + (v1[2] * v1[2]));
-               var B = ((v2[0] * v2[0]) + (v2[1] * v2[1]) + (v2[2] * v2[2]));
                
-               return Math.cos(( this.dot(v1, v2)/(Math.pow( A * B, 0.5))));
+               return Math.cos(( this.dot(v1, v2)/(Math.pow( 
+                    ((v1[0] * v1[0]) + (v1[1] * v1[1]) + (v1[2] * v1[2])) * 
+                    ((v2[0] * v2[0]) + (v2[1] * v2[1]) + (v2[2] * v2[2])), 0.5))));
                
             },
 
@@ -228,20 +239,38 @@ var _Math = function( options ) {
             equal: vector.equal,
 
             length: function( v ) {
+                return Math.sqrt(v[0] * v[0] + v[1] * v[1]+ v[2] * v[2]);
             },
 
             multiply: function( v, s ) {
+                var r = new that.Vector3( v );
+
+                for( var i = 0; i < 3; ++ i )
+                    r[i] *= s;
+
+                return r;
             },
 
             imultiply: vector.imultiply,
 
             normalize: function( v ) {
+                var length;
+                assert( (length = this.length(v)) === 0, 'v must have more then 0 components');
+                return new this.Vector3(v[0]/length,v[1]/length, v[2]/length);
             },
 
             inormalize: function( v ) {
             },
 
             subtract: function( v1, v2 ) {
+                assert( v1.length === v2.length,
+                'v1 and v2 must have the same number of components' );
+
+                return new that.Vector2(
+                        v1[0] - v2[0],
+                        v1[1] - v2[1],
+                        v1[2] - v2[2]
+                 );
             },
 
             isubtract: vector.isubtract
@@ -258,14 +287,35 @@ var _Math = function( options ) {
     this.vector4 = {
 
             add: function( v1, v2 ) {
+                assert( v1.length === v2.length,
+                'v1 and v2 must have the same number of components' );
+                return new that.Vector3(
+                        v1[0] + v2[0],
+                        v1[1] + v2[1],
+                        v1[2] + v2[2],
+                        v1[3] + v2[3]
+                );
             },
 
             iadd: vector.iadd,
 
             angle: function( v1, v2 ) {
+                return Math.acos(this.dot(v1, v2) / (this.length(v1) * this.length(v2)));
             },
 
             dot: function( v1, v2 ) {
+                return v2[0] * v1[0] + v2[1]*v1[1] + v2[2]*v1[2] + v2[3]*v1[3];
+            },
+            
+            cross: function( v1, v2 ) {
+                assert( v1.length === v2.length,
+                'v1 and v2 must have the same number of components' );
+                
+                return Vector.create([
+                (v1[1] * v2[2]) - (v1[2] * v2[1]),
+                (v1[2] * v2[0]) - (v1[0] * v2[2]),
+                (v1[0] * v2[1]) - (v1[1] * v2[0])
+                ]);
             },
 
             equal: vector.equal,
@@ -275,12 +325,18 @@ var _Math = function( options ) {
             },
 
             multiply: function( v, s ) {
+                var r = new that.Vector4( v );
+
+                for( var i = 0; i < 4; ++ i )
+                    r[i] *= s;
+
+                return r;
             },
 
             imultiply: vector.imultiply,
 
             normalize: function( v ) {
-                var l = that.vector4.length( v );
+                //var l = that.vector4.length( v );
                 var r = new that.Vector4( v );
                 
                 for( var i = 0; i < 4; ++ i )
@@ -290,7 +346,7 @@ var _Math = function( options ) {
             },
 
             inormalize: function( v ) {
-                var l = that.vector4.length( v );
+                //var l = that.vector4.length( v );
                 
                 for( var i = 0; i < 4; ++ i )
                     v[i] /= length;
@@ -299,6 +355,15 @@ var _Math = function( options ) {
             },
 
             subtract: function( v1, v2 ) {
+                assert( v1.length === v2.length,
+                'v1 and v2 must have the same number of components' );
+
+                return new that.Vector2(
+                        v1[0] - v2[0],
+                        v1[1] - v2[1],
+                        v1[2] - v2[2],
+                        v1[3] - v2[3]
+                 );
             },
 
             isubtract: vector.isubtract
